@@ -40,7 +40,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
-    setIsLoading(true);
+    setloading(true);
     setErrorMessage("");
 
     try {
@@ -56,7 +56,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
     } catch {
       setErrorMessage("Failed to create account. Please try again.");
     } finally {
-      setIsLoading(false);
+      setloading(false);
     }
 
   };
