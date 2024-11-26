@@ -1,10 +1,43 @@
 "use server";
 
+interface GetFilesProps {
+  types?: string[];
+  searchText?: string;
+  sort?: string;
+  limit?: number;
+}
+
+interface UploadFileProps {
+  file: File;
+  ownerId: string;
+  accountId: string;
+  path: string;
+}
+
+interface RenameFileProps {
+  fileId: string;
+  name: string;
+  extension: string;
+  path: string;
+}
+
+interface UpdateFileUsersProps {
+  fileId: string;
+  emails: string[];
+  path: string;
+}
+
+interface DeleteFileProps {
+  fileId: string;
+  bucketFileId: string;
+  path: string;
+}
+
 import { createAdminClient, createSessionClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Models, Query } from "node-appwrite";
-import { constructFileUrl, getFileType, parseStringify } from "@/lib/utils";
+import { parseStringify } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 
@@ -206,7 +239,9 @@ export async function getTotalSpaceUsed() {
       [Query.equal("owner", [currentUser.$id])],
     );
 
-    const totalSpace = {
+    type FileType = 'image' | 'document' | 'video' | 'audio' | 'other';
+    
+    const totalSpace: Record<FileType, { size: number; latestDate: string }> & { used: number; all: number } = {
       image: { size: 0, latestDate: "" },
       document: { size: 0, latestDate: "" },
       video: { size: 0, latestDate: "" },
@@ -234,3 +269,26 @@ export async function getTotalSpaceUsed() {
     handleError(error, "Error calculating total space used:, ");
   }
 }
+function getFileType(name: string) {
+  const extension = name.split('.').pop()?.toLowerCase() || '';
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+  const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+  const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv'];
+  const audioExtensions = ['mp3', 'wav', 'aac', 'flac'];
+
+  if (imageExtensions.includes(extension)) {
+    return { type: 'image', extension };
+  } else if (documentExtensions.includes(extension)) {
+    return { type: 'document', extension };
+  } else if (videoExtensions.includes(extension)) {
+    return { type: 'video', extension };
+  } else if (audioExtensions.includes(extension)) {
+    return { type: 'audio', extension };
+  } else {
+    return { type: 'other', extension };
+  }
+}
+function constructFileUrl(fileId: string): string {
+  return `${appwriteConfig.endpointUrl}/storage/buckets/${appwriteConfig.bucketId}/files/${fileId}/view`;
+}
+

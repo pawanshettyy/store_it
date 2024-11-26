@@ -9,7 +9,7 @@ const Header = () => {
     <header className="header">
       <Search />
       <div className="header-wrapper">
-        <FileUploader/>
+        <FileUploader ownerId="yourOwnerId" accountId="yourAccountId" />
         <form>
           <Button type="submit" className="sign-out-button">
             <Image
