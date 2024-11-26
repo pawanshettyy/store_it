@@ -20,7 +20,8 @@ import Image from "next/image";
 import { createAccount, signInUser } from "@/lib/actions/user.actions";
 
 const formSchema = z.object({
-  username: z.string().min(2).max(50),
+  fullName: z.string().min(2).max(50).optional(),
+  email: z.string().email(),
 });
 
 type FormType = "sign-in" | "sign-up";
